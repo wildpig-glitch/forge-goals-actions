@@ -1,0 +1,11 @@
+{
+  "name": "forge-goals-actions",
+  "version": "1.0.0",
+  "description": "Forge Rovo actions for creating, updating, and deleting Atlassian Goals via GraphQL API",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@forge/api": "^6.1.3"
+  }
+}

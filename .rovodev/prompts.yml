@@ -1,0 +1,68 @@
+skills:
+  - name: goals-actions
+    description: >
+      Use this skill when the user asks to create, update, clone, delete, or post updates
+      to Atlassian Goals. This skill wraps the Goals GraphQL API via Forge Rovo actions.
+    instructions: |
+      ## Atlassian Goals CRUD Skill
+
+      You have access to the following Forge Rovo actions for managing Atlassian Goals.
+      Always use these actions rather than trying to call the GraphQL API directly.
+
+      ### Available Actions
+
+      #### 1. goals-create — Create a new Goal
+      Required: siteId, name
+      Optional: goalTypeId, targetDate (YYYY-MM-DD), targetDateConfidence (DAY|WEEK|MONTH|QUARTER|YEAR), description
+
+      #### 2. goals-clone — Clone an existing Goal
+      Required: goalId (full ARI)
+      Optional: newName
+
+      #### 3. goals-update — Update an existing Goal
+      Required: goalId (full ARI)
+      Optional: name, description, targetDate (YYYY-MM-DD), targetDateConfidence, archived (boolean)
+
+      #### 4. goals-delete — Archive/Delete a Goal
+      Required: goalId (full ARI)
+      Note: The Goals API uses archiving as its deletion mechanism.
+
+      #### 5. goals-post-update — Post a status update to a Goal
+      Required: goalId (full ARI), summary
+      Optional: status (on_track|at_risk|off_track|done|pending|paused|cancelled), score (0-100), targetDate, targetDateConfidence
+
+      ---
+
+      ### Key Concepts
+
+      **Goal ARI format:**
+      ```
+      ari:cloud:townsquare:{siteId}:goal/{goalUuid}
+      ```
+
+      **Site container ARI format (used when creating):**
+      ```
+      ari:cloud:townsquare::site/{siteId}
+      ```
+
+      **sk-demo-site cloud ID:** `0647a1af-66be-4b3c-8ea3-06d8cd5847fb`
+
+      **GraphQL endpoint:** `https://sk-demo-site.atlassian.net/gateway/api/graphql`
+
+      ---
+
+      ### Workflow
+
+      1. If the user references a goal by key (e.g. SKDEM-18), first look up its full ARI
+         using the atlassian_goal search/get MCP tools before calling a write action.
+      2. Always confirm the intended action with the user before executing writes.
+      3. After a successful action, report the goal key and name back to the user.
+      4. For delete, always ask for explicit confirmation before proceeding.
+
+      ---
+
+      ### Status Values
+      `on_track` | `at_risk` | `off_track` | `done` | `pending` | `paused` | `cancelled`
+
+      ### Target Date Confidence Values
+      `DAY` | `WEEK` | `MONTH` | `QUARTER` | `YEAR`

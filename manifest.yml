@@ -1,0 +1,240 @@
+modules:
+  action:
+    - key: goals-create
+      name: Create Atlassian Goal
+      function: createGoal
+      description: Creates a new Atlassian Goal in the specified site. Returns the new goal's ID, name, and key.
+      inputs:
+        siteId:
+          title: Site ID
+          type: string
+          description: The Atlassian cloud site ID (e.g. 0647a1af-66be-4b3c-8ea3-06d8cd5847fb)
+          required: true
+        name:
+          title: Goal Name
+          type: string
+          description: The name/title of the goal to create
+          required: true
+        goalTypeId:
+          title: Goal Type ID
+          type: string
+          description: Optional ARI for the goal type (e.g. ari:cloud:goal:{siteId}:goal-type/{activationId}/{goalTypeId})
+          required: false
+        targetDate:
+          title: Target Date
+          type: string
+          description: Target date for the goal in YYYY-MM-DD format (e.g. 2026-12-31)
+          required: false
+        targetDateConfidence:
+          title: Target Date Confidence
+          type: string
+          description: Confidence level for the target date. One of DAY, WEEK, MONTH, QUARTER, YEAR
+          required: false
+        description:
+          title: Description
+          type: string
+          description: A plain text description for the goal
+          required: false
+      actionVerb: CREATE
+
+    - key: goals-clone
+      name: Clone Atlassian Goal
+      function: cloneGoal
+      description: Clones an existing Atlassian Goal by its ARI ID. Optionally give the clone a new name.
+      inputs:
+        goalId:
+          title: Goal ID (ARI)
+          type: string
+          description: The ARI of the goal to clone (e.g. ari:cloud:townsquare:{siteId}:goal/{goalUuid})
+          required: true
+        newName:
+          title: New Name
+          type: string
+          description: Optional new name for the cloned goal. If omitted, the original name is used.
+          required: false
+      actionVerb: CREATE
+
+    - key: goals-update
+      name: Update Atlassian Goal
+      function: updateGoal
+      description: Updates an existing Atlassian Goal. Can change name, description, target date, or archive status.
+      inputs:
+        goalId:
+          title: Goal ID (ARI)
+          type: string
+          description: The ARI of the goal to update (e.g. ari:cloud:townsquare:{siteId}:goal/{goalUuid})
+          required: true
+        name:
+          title: New Name
+          type: string
+          description: New name/title for the goal
+          required: false
+        description:
+          title: New Description
+          type: string
+          description: New plain text description for the goal
+          required: false
+        targetDate:
+          title: Target Date
+          type: string
+          description: New target date in YYYY-MM-DD format
+          required: false
+        targetDateConfidence:
+          title: Target Date Confidence
+          type: string
+          description: Confidence level for the target date. One of DAY, WEEK, MONTH, QUARTER, YEAR
+          required: false
+        archived:
+          title: Archived
+          type: boolean
+          description: Set to true to archive the goal, false to unarchive
+          required: false
+      actionVerb: UPDATE
+
+    - key: goals-delete
+      name: Delete (Archive) Atlassian Goal
+      function: deleteGoal
+      description: Archives/deletes an Atlassian Goal by its ARI ID. Note - the Goals API uses archiving as the deletion mechanism.
+      inputs:
+        goalId:
+          title: Goal ID (ARI)
+          type: string
+          description: The ARI of the goal to delete/archive (e.g. ari:cloud:townsquare:{siteId}:goal/{goalUuid})
+          required: true
+      actionVerb: DELETE
+
+    - key: goals-post-update
+      name: Post Goal Status Update
+      function: postGoalUpdate
+      description: Posts a status update to an Atlassian Goal. Can include a summary, status (on_track, at_risk, off_track, done), progress score, and updated target date.
+      inputs:
+        goalId:
+          title: Goal ID (ARI)
+          type: string
+          description: The ARI of the goal to post an update to (e.g. ari:cloud:townsquare:{siteId}:goal/{goalUuid})
+          required: true
+        summary:
+          title: Update Summary
+          type: string
+          description: The text content of the status update
+          required: true
+        status:
+          title: Status
+          type: string
+          description: New status for the goal. One of on_track, at_risk, off_track, done, pending, paused, cancelled
+          required: false
+        score:
+          title: Progress Score
+          type: number
+          description: Progress score from 0 to 100
+          required: false
+        targetDate:
+          title: Target Date
+          type: string
+          description: Updated target date in YYYY-MM-DD format
+          required: false
+        targetDateConfidence:
+          title: Target Date Confidence
+          type: string
+          description: Confidence level for the target date. One of DAY, WEEK, MONTH, QUARTER, YEAR
+          required: false
+      actionVerb: CREATE
+
+  rovo:agent:
+    - key: goals-manager-agent
+      name: Goals Manager
+      description: An agent that can create, update, clone, delete, and post updates to Atlassian Goals.
+      prompt: >
+        You are a helpful Goals Manager agent for Atlassian Goals.
+
+        You can perform the following operations on Atlassian Goals:
+
+        a. Create a new goal
+        b. Clone an existing goal
+        c. Update a goal (rename, change description, change target date)
+        d. Delete (archive) a goal
+        e. Post a status update to a goal
+
+
+        Always confirm the details with the user before making any changes.
+
+        When a goalId is needed and the user provides a goal key (like SKDEM-18), you will need
+        the full ARI. The ARI format is: ari:cloud:townsquare:{siteId}:goal/{goalUuid}.
+        Ask the user for the site ID and goal UUID if not provided, or look them up first.
+
+        ---
+
+        a. Create a new goal
+
+        1. Ask for: goal name, site ID, target date (optional), description (optional)
+        2. Use the goals-create action
+        3. Confirm success and share the new goal key
+
+        ---
+
+        b. Clone an existing goal
+
+        1. Ask for the goal ARI to clone and optionally a new name
+        2. Use the goals-clone action
+        3. Confirm success and share the new goal key
+
+        ---
+
+        c. Update a goal
+
+        1. Ask for the goal ARI and what fields to change
+        2. Use the goals-update action
+        3. Confirm success
+
+        ---
+
+        d. Delete (archive) a goal
+
+        1. Ask for the goal ARI
+        2. Confirm with the user before deleting
+        3. Use the goals-delete action
+        4. Confirm success
+
+        ---
+
+        e. Post a status update
+
+        1. Ask for the goal ARI, update summary, and optionally status and progress score
+        2. Use the goals-post-update action
+        3. Confirm success
+
+      conversationStarters:
+        - Create a new goal
+        - Clone an existing goal
+        - Update a goal's target date
+        - Post a status update to a goal
+        - Archive a goal
+      actions:
+        - goals-create
+        - goals-clone
+        - goals-update
+        - goals-delete
+        - goals-post-update
+
+  function:
+    - key: createGoal
+      handler: index.createGoal
+    - key: cloneGoal
+      handler: index.cloneGoal
+    - key: updateGoal
+      handler: index.updateGoal
+    - key: deleteGoal
+      handler: index.deleteGoal
+    - key: postGoalUpdate
+      handler: index.postGoalUpdate
+
+app:
+  runtime:
+    name: nodejs22.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/forge-goals-actions-placeholder
+permissions:
+  scopes:
+    - read:me
+    - read:account
