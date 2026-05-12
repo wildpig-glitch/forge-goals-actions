@@ -233,7 +233,7 @@ app:
     name: nodejs22.x
     memoryMB: 256
     architecture: arm64
-  id: ari:cloud:ecosystem::app/forge-goals-actions-placeholder
+  id: ari:cloud:ecosystem::app/e40ddbfc-09bd-499f-a868-0dace7f3c7fc
 permissions:
   scopes:
     - read:me
