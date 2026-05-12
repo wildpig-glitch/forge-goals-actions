@@ -67,6 +67,37 @@ chmod 600 ~/.atlassian-secrets
 [ -f ~/.atlassian-secrets ] && source ~/.atlassian-secrets
 ```
 
+## One-Time Setup: Creating the Atlassian API Token
+
+1. Go to https://id.atlassian.com/manage-profile/security/api-tokens
+2. Click **Create API token**, give it a label like "Rovo Dev Goals Script"
+3. Copy the token value
+4. Generate the base64-encoded credential:
+   ```bash
+   echo -n "your-email@domain.com:your-api-token" | base64
+   ```
+5. Store it securely in macOS Keychain:
+   ```bash
+   security add-generic-password -a "$USER" -s "ATLASSIAN_TOKEN" -w "paste-base64-output-here"
+   ```
+6. Add this line to your `~/.zshrc` (runs on every new shell session):
+   ```bash
+   export ATLASSIAN_TOKEN=$(security find-generic-password -a "$USER" -s "ATLASSIAN_TOKEN" -w)
+   ```
+7. Reload your shell:
+   ```bash
+   source ~/.zshrc
+   ```
+8. Verify it works (should print the base64 string, NOT empty):
+   ```bash
+   echo $ATLASSIAN_TOKEN
+   ```
+
+Once this is done, Rovo Dev can write and execute scripts that call the Goals API
+using `$ATLASSIAN_TOKEN` — the value never enters the conversation or reaches the LLM.
+
+---
+
 ## Next Steps (not yet implemented)
 
 1. **User sets up `$ATLASSIAN_TOKEN`** in their shell using one of the methods above
